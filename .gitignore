@@ -34,3 +34,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Firebase Functions 環境変数
+functions/.env
+
+functions/service-account-key.json
+
+.vscode/*
+!.vscode/settings.json
+
+functions/encoded.txt
+
