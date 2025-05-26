@@ -1,15 +1,5 @@
-// hooks/useSchools.ts
 import { useEffect, useState } from 'react'
-
-export type School = {
-  id: string
-  name: string
-  description: string
-  targetAge: string
-  price: number
-  rating: number
-  link: string
-}
+import { School } from '@/types/school' // ← こっちを使う
 
 export const useSchools = () => {
   const [schools, setSchools] = useState<School[]>([])

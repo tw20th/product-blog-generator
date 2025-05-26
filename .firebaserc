@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "kids-code-affiliate-36922"
-  }
+    "default": "product-blog-generator-1d7d7"
+  },
+  "targets": {},
+  "etags": {}
 }

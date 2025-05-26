@@ -1,18 +1,44 @@
-import OpenAI from "openai";
+import openai from "../utils/openaiClient";
 
-export async function generateBlogContent(topic: string): Promise<string> {
-  const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
-  });
-
+export async function generateBlogContent({
+  productName,
+  price,
+  features
+}: {
+  productName: string;
+  price: string;
+  features: string;
+}): Promise<string> {
   const prompt = `
-以下のテーマで親向けのSEOブログ記事を生成してください。
+あなたは商品紹介が得意なプロのブログライターです。
+以下の商品情報に基づいて、**マークダウン形式の紹介記事**を作成してください。
+
+【商品名】${productName}  
+【価格】${price}円  
+【特徴】${features}
 
 ---
-テーマ: ${topic}
-構成: タイトル、導入文、本文（見出し・箇条書き含む）
-トーン: 信頼性と親しみ
-制約: 文字数800字以上、日本語で出力
+
+## はじめに
+${productName} を検討している読者に向けて、悩みやニーズに共感する導入文を書いてください。
+
+## ${productName}の特徴
+${features} を具体的に紹介し、他製品との違いや魅力を強調してください。
+
+## この価格でこの性能！
+${price}円という価格と、性能・満足度のバランスをわかりやすく説明してください。
+
+## こんな人におすすめ
+ゲーマー、リモートワーカーなど、利用シーンを具体的に提案してください。
+
+## まとめ
+読者が購入したくなるような結論と行動喚起（CTA）で締めくくってください。
+
+📝 出力形式ルール:
+- Markdown形式（## 見出し、絵文字OK）
+- 800〜1000文字程度、日本語で書く
+- コードブロック（\`\`\`）は使わない
+- ${productName} という商品名を本文中に複数回含める
 `;
 
   const res = await openai.chat.completions.create({

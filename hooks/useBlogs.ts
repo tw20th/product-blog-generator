@@ -1,16 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-
-export type BlogPost = {
-  id: string
-  title: string
-  slug: string
-  createdAt: string
-  views: number
-  category: string
-  tags: string[]
-  content: string
-  imageUrl: string // ← これを追加！
-}
+import { BlogPost } from '@/types/blog' // ← 型を外部からインポート
 
 export const useBlogs = () => {
   const [blogs, setBlogs] = useState<BlogPost[]>([])

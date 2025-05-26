@@ -1,22 +1,19 @@
-import "dotenv/config";
+import * as dotenv from "dotenv";
+dotenv.config();
+
+import { config } from "firebase-functions";
 import { initializeApp, cert, ServiceAccount } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 
-const base64 = process.env.FIREBASE_CONFIG_BASE64;
+// .env または firebase functions:config の両対応
+const base64 = process.env.ADMIN_SERVICE_ACCOUNT_BASE64 || config().admin?.config_base64;
 
 if (!base64) {
-  throw new Error("FIREBASE_CONFIG_BASE64 is not set in environment variables");
+  throw new Error("Service account base64 is not set.");
 }
 
-let serviceAccount: ServiceAccount;
-
-try {
-  const decoded = Buffer.from(base64, "base64").toString("utf8");
-  serviceAccount = JSON.parse(decoded);
-} catch (err) {
-  console.error("Failed to parse FIREBASE_CONFIG_BASE64:", err);
-  throw err;
-}
+const decoded = Buffer.from(base64, "base64").toString("utf8");
+const serviceAccount = JSON.parse(decoded) as ServiceAccount;
 
 const firebaseApp = initializeApp({
   credential: cert(serviceAccount)

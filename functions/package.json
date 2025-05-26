@@ -1,6 +1,7 @@
 {
   "main": "lib/index.js",
   "dependencies": {
+    "dotenv": "^16.5.0",
     "firebase-admin": "^11.x",
     "firebase-functions": "^4.x",
     "minimatch": "^3.1.2",

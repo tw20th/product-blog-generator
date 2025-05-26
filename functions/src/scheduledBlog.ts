@@ -5,24 +5,38 @@ dotenv.config({ path: path.resolve(__dirname, "../.env") });
 import { generateBlogContent } from "./prompts/blogPrompt";
 import { fetchCoverImage } from "./utils/fetchImage";
 import { postBlog } from "./utils/postBlog";
+import { getMonitoredItemRandom } from "./utils/getMonitoredItem";
 
 export async function scheduledBlog() {
   try {
     console.log("🔁 自動投稿スクリプト開始");
 
-    const topic = "子供向け英会話教室の選び方";
-    const slug = `english-lesson-${Date.now()}`;
+    const item = await getMonitoredItemRandom();
+    const { productName, price, features, imageKeyword } = item;
 
-    const content = await generateBlogContent(topic);
-    const imageUrl = await fetchCoverImage(topic);
+    const title = `${productName} レビューとおすすめポイント`;
+    const slug = `blog-${Date.now()}`;
+    const category = "ゲーミングチェア";
+    const rawTags = ["ゲーミングチェア", productName, "在宅ワーク"];
+    const tags = rawTags.filter(
+      (tag): tag is string => typeof tag === "string" && tag.trim() !== ""
+    );
+
+    const content = await generateBlogContent({
+      productName,
+      price,
+      features
+    });
+
+    const imageUrl = await fetchCoverImage(imageKeyword);
 
     const result = await postBlog({
-      title: topic,
+      title,
       slug,
       content,
       imageUrl,
-      category: "英会話",
-      tags: ["英会話", "子供", "習い事"]
+      category,
+      tags
     });
 
     console.log("✅ 投稿完了:", result.id);
@@ -32,6 +46,3 @@ export async function scheduledBlog() {
     return { success: false, error: String(err) };
   }
 }
-
-// ✅ ここを追加！関数を実行しないと何も起きません
-scheduledBlog();

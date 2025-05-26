@@ -14,11 +14,20 @@
     "firebase": "^11.8.1",
     "firebase-admin": "^13.4.0",
     "firebase-functions": "^6.3.2",
+    "mdast": "^2.3.2",
     "next": "14.2.24",
     "node-fetch": "^3.3.2",
     "openai": "^4.103.0",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "react-markdown": "^10.1.0",
+    "react-syntax-highlighter": "^15.6.1",
+    "rehype-highlight": "^7.0.2",
+    "rehype-raw": "^7.0.0",
+    "remark-emoji": "^5.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-parse": "^11.0.0",
+    "unified": "^11.0.5"
   },
   "devDependencies": {
     "@types/node": "^20",
