@@ -9,8 +9,9 @@ typings/
 node_modules/
 *.local
 
+# Firebase env + debug
 .env
-
-functions/encoded.txt
-
 .runtimeconfig.json
+encoded.txt
+service-account-key.json
+firebase-debug.log
