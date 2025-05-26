@@ -1,12 +1,12 @@
-// types/blog.ts
-export type BlogPost = {
-  id: string
-  title: string
-  slug: string
-  createdAt: string
-  views: number
-  category: string
-  tags: string[]
-  content: string
-  imageUrl: string
-}
+export type Blog = {
+  id?: string;
+  slug: string;
+  title: string;
+  content: string;
+  imageUrl?: string;
+  tags: string[];
+  category: string;
+  productId: string;
+  createdAt: string;
+  views: number;
+};

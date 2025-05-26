@@ -1,5 +1,9 @@
-import { db } from "../src/firebaseAdmin";
-import { isItemEligible } from "../src/utils/applyItemFilter";
+import path from "path";
+import dotenv from "dotenv";
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
+
+import { db } from "./firebaseAdmin";
+import { isItemEligible } from "./utils/applyItemFilter";
 
 type RakutenItem = {
   id: string;
@@ -8,7 +12,9 @@ type RakutenItem = {
   productKeyword?: string;
 };
 
-export async function selectAndSaveMonitoredItems() {
+export async function scheduledSelectMonitored() {
+  console.log("🔁 monitoredItems 自動選定 開始");
+
   const snapshot = await db.collection("rakutenItems").get();
   const now = new Date();
 
@@ -26,12 +32,6 @@ export async function selectAndSaveMonitoredItems() {
       features: "快適な座り心地と高い耐久性",
       imageKeyword: item.productKeyword || "ゲーミングチェア",
       fromRakutenItemId: item.id,
-
-      // 🔽 新規フィールド
-      score: 0,
-      tag: [],
-      featureHighlights: "",
-
       createdAt: now.toISOString()
     });
 
@@ -40,6 +40,3 @@ export async function selectAndSaveMonitoredItems() {
 
   console.log(`🏁 完了: ${selected.length} 件を monitoredItems に登録`);
 }
-
-// 末尾にこれを追加
-selectAndSaveMonitoredItems();

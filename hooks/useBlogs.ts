@@ -1,42 +1,25 @@
-import { useEffect, useState, useCallback } from 'react'
-import { BlogPost } from '@/types/blog' // ← 型を外部からインポート
+import { useEffect, useState } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebaseClient";
+import { Blog } from "@/types/blog";
 
 export const useBlogs = () => {
-  const [blogs, setBlogs] = useState<BlogPost[]>([])
-  const [loading, setLoading] = useState(true)
+  const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchBlogs = async () => {
-      try {
-        const res = await fetch('/api/blogs')
-        const data = await res.json()
-        setBlogs(data)
-      } catch (error) {
-        console.error('ブログ取得エラー:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
+      const snapshot = await getDocs(collection(db, "blogs"));
+      const result: Blog[] = snapshot.docs.map((doc) => ({
+        ...(doc.data() as Blog),
+        id: doc.id,
+      }));
+      setBlogs(result);
+      setLoading(false);
+    };
 
-    fetchBlogs()
-  }, [])
+    fetchBlogs();
+  }, []);
 
-  const filterByCategory = useCallback(
-    (category: string) => blogs.filter((b) => b.category === category),
-    [blogs]
-  )
-
-  const getRelatedBlogs = useCallback(
-    (target: BlogPost) => {
-      return blogs.filter((blog) => {
-        if (blog.id === target.id) return false
-        const sameCategory = blog.category === target.category
-        const sharedTags = blog.tags.some((tag) => target.tags.includes(tag))
-        return sameCategory || sharedTags
-      })
-    },
-    [blogs]
-  )
-
-  return { blogs, loading, filterByCategory, getRelatedBlogs }
-}
+  return { blogs, loading };
+};

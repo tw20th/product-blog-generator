@@ -8,6 +8,7 @@ type BlogParams = {
   imageUrl?: string;
   category: string;
   tags: string[];
+  productId: string;
 };
 
 export async function postBlog(params: BlogParams) {

@@ -1,60 +1,67 @@
-import { useParams } from 'next/navigation'
-import { useSchools } from '@/hooks/useSchools'
-import { useBlogs } from '@/hooks/useBlogs'
-import SchoolCard from '@/components/SchoolCard'
-import BlogCard from '@/components/BlogCard'
+"use client";
 
-const CategoryPage = () => {
-  const { schools, loading: loadingSchools } = useSchools()
-  const { blogs, loading: loadingBlogs } = useBlogs()
-  const params = useParams()
-  const tag = params?.tag
+import { useMonitoredItems } from "@/hooks/useMonitoredItems";
+import { ProductCard } from "@/components/product/ProductCard";
+import { SortSelect } from "@/components/common/SortSelect";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { MonitoredItem } from "@/types/item";
 
-  if (!tag || typeof tag !== 'string') return <p>カテゴリが見つかりません。</p>
-  if (loadingSchools || loadingBlogs) return <p>読み込み中...</p>
+type SortOption = "scoreDesc" | "priceAsc" | "priceDesc";
 
-  const matchedSchools = schools.filter((school) => school.tags?.includes(tag))
-  const matchedBlogs = blogs.filter((blog) => blog.tags?.includes(tag))
+export default function CategoryPage() {
+  const { tag } = useParams();
+  const { items, loading } = useMonitoredItems();
+  const [filtered, setFiltered] = useState<MonitoredItem[]>([]);
+  const [sort, setSort] = useState<SortOption>("scoreDesc");
+
+  useEffect(() => {
+    if (!loading && typeof tag === "string") {
+      let matched = items.filter((item) => item.tag.includes(tag));
+
+      switch (sort) {
+        case "scoreDesc":
+          matched = matched.sort((a, b) => b.score - a.score);
+          break;
+        case "priceAsc":
+          matched = matched.sort((a, b) => Number(a.price) - Number(b.price));
+          break;
+        case "priceDesc":
+          matched = matched.sort((a, b) => Number(b.price) - Number(a.price));
+          break;
+      }
+
+      setFiltered(matched);
+    }
+  }, [tag, items, loading, sort]);
+
+  if (loading) return <div className="p-4">読み込み中...</div>;
 
   return (
-    <main className="max-w-5xl mx-auto px-4 py-10">
-      <h1 className="text-2xl font-bold text-pink-600 mb-6 text-center">
-        「{tag}」に関連する情報
-      </h1>
+    <main className="p-4 space-y-4">
+      <h1 className="text-2xl font-bold">カテゴリ：{tag}</h1>
 
-      {matchedSchools.length > 0 && (
-        <>
-          <h2 className="text-xl font-semibold mb-4">スクール一覧</h2>
-          <ul className="grid gap-6 md:grid-cols-2 mb-10">
-            {matchedSchools.map((school) => (
-              <li key={school.id}>
-                <SchoolCard school={school} />
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
+      <div className="mb-4">
+        <SortSelect value={sort} onChange={setSort} />
+      </div>
 
-      {matchedBlogs.length > 0 && (
-        <>
-          <h2 className="text-xl font-semibold mb-4">関連ブログ記事</h2>
-          <ul className="grid gap-6 md:grid-cols-2">
-            {matchedBlogs.map((blog) => (
-              <li key={blog.slug}>
-                <BlogCard blog={blog} />
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
-
-      {matchedSchools.length === 0 && matchedBlogs.length === 0 && (
-        <p className="text-center text-gray-600">
-          関連する情報が見つかりませんでした。
-        </p>
+      {filtered.length === 0 ? (
+        <div>該当する商品が見つかりませんでした。</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filtered.map((item) => (
+            <ProductCard
+              key={item.id}
+              productName={item.productName}
+              price={item.price}
+              imageUrl={`/images/${item.imageKeyword}.jpg`} // 仮画像
+              score={item.score}
+              featureHighlights={item.featureHighlights}
+              tag={item.tag}
+            />
+          ))}
+        </div>
       )}
     </main>
-  )
+  );
 }
-
-export default CategoryPage

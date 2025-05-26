@@ -1,40 +1,44 @@
-'use client'
+"use client";
 
-import { useSchools, School } from '@/hooks/useSchools'
-import { useSortedItems } from '@/hooks/useSortedItems'
-import SortSelect from '@/components/SortSelect'
-import SchoolCard from '@/components/SchoolCard'
+import { useMonitoredItems } from "@/hooks/useMonitoredItems";
+import { ProductCard } from "@/components/product/ProductCard";
+import { useEffect, useState } from "react";
+import { MonitoredItem } from "@/types/item";
 
 export default function RankingPage() {
-  const { schools, loading } = useSchools()
+  const { items, loading } = useMonitoredItems();
+  const [topItems, setTopItems] = useState<MonitoredItem[]>([]);
 
-  const sortFunctions = {
-    ratingHigh: (a: School, b: School) => b.rating - a.rating,
-    priceLow: (a: School, b: School) => a.price - b.price,
-    priceHigh: (a: School, b: School) => b.price - a.price,
-  }
+  useEffect(() => {
+    if (!loading) {
+      const sorted = [...items].sort((a, b) => b.score - a.score).slice(0, 10);
+      setTopItems(sorted);
+    }
+  }, [items, loading]);
 
-  const {
-    sortKey,
-    setSortKey,
-    sortedItems: sortedSchools,
-  } = useSortedItems<School, keyof typeof sortFunctions>(
-    schools,
-    sortFunctions,
-    'ratingHigh'
-  )
-
-  if (loading) return <p>読み込み中...</p>
+  if (loading) return <div className="p-4">読み込み中...</div>;
 
   return (
-    <main className="p-6">
-      <h1 className="text-2xl font-bold mb-4">人気の習い事ランキング</h1>
-      <SortSelect value={sortKey} onChange={setSortKey} />
+    <main className="p-4 space-y-4">
+      <h1 className="text-2xl font-bold">スコアランキング TOP10</h1>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {sortedSchools.map((school) => (
-          <SchoolCard key={school.id} school={school} />
+        {topItems.map((item, index) => (
+          <div key={item.id} className="relative">
+            <span className="absolute -top-2 -left-2 bg-yellow-400 text-white text-xs font-bold px-2 py-1 rounded-full shadow">
+              #{index + 1}
+            </span>
+            <ProductCard
+              productName={item.productName}
+              price={item.price}
+              imageUrl={`/images/${item.imageKeyword}.jpg`}
+              score={item.score}
+              featureHighlights={item.featureHighlights}
+              tag={item.tag}
+            />
+          </div>
         ))}
       </div>
     </main>
-  )
+  );
 }

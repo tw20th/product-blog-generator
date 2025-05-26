@@ -1,0 +1,6 @@
+{
+  "excludeKeywords": ["ジャンク", "訳あり", "破損", "保証なし"],
+  "preferredBrands": ["AKRacing", "GTRACING", "Dowinx", "GTPLAYER"],
+  "minPrice": 10000,
+  "maxPrice": 50000
+}

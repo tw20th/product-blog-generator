@@ -1,4 +1,16 @@
+// functions/src/prompts/blogPrompt.ts
 import openai from "../utils/openaiClient";
+import fs from "fs";
+import path from "path";
+
+function loadPromptTemplate(): string {
+  const filePath = path.resolve(__dirname, "../../prompts/blogPromptTemplate.txt");
+  return fs.readFileSync(filePath, "utf8");
+}
+
+function fillTemplate(template: string, values: Record<string, string>): string {
+  return template.replace(/{{(.*?)}}/g, (_, key) => values[key.trim()] || "");
+}
 
 export async function generateBlogContent({
   productName,
@@ -9,41 +21,12 @@ export async function generateBlogContent({
   price: string;
   features: string;
 }): Promise<string> {
-  const prompt = `
-あなたは商品紹介が得意なプロのブログライターです。
-以下の商品情報に基づいて、**マークダウン形式の紹介記事**を作成してください。
-
-【商品名】${productName}  
-【価格】${price}円  
-【特徴】${features}
-
----
-
-## はじめに
-${productName} を検討している読者に向けて、悩みやニーズに共感する導入文を書いてください。
-
-## ${productName}の特徴
-${features} を具体的に紹介し、他製品との違いや魅力を強調してください。
-
-## この価格でこの性能！
-${price}円という価格と、性能・満足度のバランスをわかりやすく説明してください。
-
-## こんな人におすすめ
-ゲーマー、リモートワーカーなど、利用シーンを具体的に提案してください。
-
-## まとめ
-読者が購入したくなるような結論と行動喚起（CTA）で締めくくってください。
-
-📝 出力形式ルール:
-- Markdown形式（## 見出し、絵文字OK）
-- 800〜1000文字程度、日本語で書く
-- コードブロック（\`\`\`）は使わない
-- ${productName} という商品名を本文中に複数回含める
-`;
+  const rawTemplate = loadPromptTemplate();
+  const filledPrompt = fillTemplate(rawTemplate, { productName, price, features });
 
   const res = await openai.chat.completions.create({
     model: "gpt-4",
-    messages: [{ role: "user", content: prompt }]
+    messages: [{ role: "user", content: filledPrompt }]
   });
 
   const content = res.choices[0]?.message?.content?.trim();

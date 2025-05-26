@@ -20,6 +20,7 @@
   },
   "scripts": {
     "lint": "eslint .",
-    "build": "tsc"
+    "build": "tsc",
+    "postbuild": "cp -r filters lib/filters"
   }
 }

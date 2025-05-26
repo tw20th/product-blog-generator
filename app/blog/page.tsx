@@ -1,65 +1,46 @@
-// app/blog/page.tsx
-import { db } from "@/lib/firebaseClient";
+"use client";
+
+import { useBlogs } from "@/hooks/useBlogs";
+import { useSortedBlogs } from "@/hooks/useSortedBlogs";
+import { BlogCard } from "@/components/blog/BlogCard";
 import {
-  collection,
-  getDocs,
-  query,
-  orderBy,
-  DocumentData,
-  QueryDocumentSnapshot,
-} from "firebase/firestore";
-import Link from "next/link";
-import Image from "next/image";
+  BlogSortSelect,
+  BlogSortOption,
+} from "@/components/blog/BlogSortSelect";
+import { useState } from "react";
 
-type BlogPost = {
-  id: string;
-  title: string;
-  slug: string;
-  imageUrl: string;
-  createdAt: string; // ← 修正ポイント（Timestamp → string）
-};
+export default function BlogPage() {
+  const { blogs, loading } = useBlogs();
+  const [sort, setSort] = useState<BlogSortOption>("latest");
+  const sortedBlogs = useSortedBlogs(blogs, sort);
 
-export const dynamic = "force-dynamic";
-
-export default async function BlogPage() {
-  const q = query(collection(db, "blogs"), orderBy("createdAt", "desc"));
-  const snapshot = await getDocs(q);
-
-  const posts: BlogPost[] = snapshot.docs.map(
-    (doc: QueryDocumentSnapshot<DocumentData>) => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        title: data.title,
-        slug: data.slug,
-        imageUrl: data.imageUrl,
-        createdAt: data.createdAt,
-      };
-    }
-  );
+  if (loading) return <div className="p-4">読み込み中...</div>;
 
   return (
-    <div className="p-4 space-y-6">
+    <main className="p-4 space-y-4">
       <h1 className="text-2xl font-bold">ブログ一覧</h1>
-      {posts.map((post) => (
-        <div key={post.id} className="border p-4 rounded space-y-2">
-          <Link href={`/blog/${post.slug}`}>
-            <h2 className="text-xl font-semibold hover:underline">
-              {post.title}
-            </h2>
-          </Link>
-          <Image
-            src={post.imageUrl}
-            alt={post.title}
-            width={600}
-            height={400}
-            className="rounded"
-          />
-          <p className="text-sm text-gray-500">
-            {new Date(post.createdAt).toLocaleString()}
-          </p>
+
+      <div className="mb-4">
+        <BlogSortSelect value={sort} onChange={setSort} />
+      </div>
+
+      {sortedBlogs.length === 0 ? (
+        <div>記事が見つかりませんでした。</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {sortedBlogs.map((blog) => (
+            <BlogCard
+              key={blog.id}
+              slug={blog.slug}
+              title={blog.title}
+              imageUrl={blog.imageUrl}
+              tags={blog.tags}
+              views={blog.views}
+              createdAt={blog.createdAt}
+            />
+          ))}
         </div>
-      ))}
-    </div>
+      )}
+    </main>
   );
 }
