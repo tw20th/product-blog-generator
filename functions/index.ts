@@ -1,6 +1,6 @@
 // functions/index.ts
 
-import * as functions from "firebase-functions";
+import * as functions from "firebase-functions/v1";
 import { scheduledBlog } from "./src/scheduledBlog";
 import { scheduledRakuten } from "./src/scheduledRakuten";
 import { scheduledSelectMonitored } from "./src/scheduledSelectMonitored";
