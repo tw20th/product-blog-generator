@@ -1,45 +1,111 @@
 "use client";
 
 import { useBlogs } from "@/hooks/useBlogs";
-import { useSortedBlogs } from "@/hooks/useSortedBlogs";
 import { BlogCard } from "@/components/blog/BlogCard";
-import {
-  BlogSortSelect,
-  BlogSortOption,
-} from "@/components/blog/BlogSortSelect";
+import { TagList } from "@/components/blog/TagList";
+import { useSortedBlogs } from "@/hooks/useSortedBlogs";
+import { usePagination } from "@/hooks/usePagination";
 import { useState } from "react";
+import { SearchInput } from "@/components/common/SearchInput";
+import { motion } from "framer-motion"; // ✅ 追加
 
 export default function BlogPage() {
   const { blogs, loading } = useBlogs();
-  const [sort, setSort] = useState<BlogSortOption>("latest");
-  const sortedBlogs = useSortedBlogs(blogs, sort);
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [keyword, setKeyword] = useState("");
 
-  if (loading) return <div className="p-4">読み込み中...</div>;
+  const sorted = useSortedBlogs(blogs, "latest");
+
+  const filtered = sorted.filter((b) => {
+    const matchesTag = selectedTag ? b.tags.includes(selectedTag) : true;
+    const matchesKeyword =
+      keyword === "" ||
+      b.title.toLowerCase().includes(keyword.toLowerCase()) ||
+      b.tags.some((t) => t.toLowerCase().includes(keyword.toLowerCase()));
+    return matchesTag && matchesKeyword;
+  });
+
+  const {
+    paginatedItems,
+    currentPage,
+    totalPages,
+    goToNext,
+    goToPrev,
+    goToPage,
+  } = usePagination(filtered, 6);
 
   return (
-    <main className="p-4 space-y-4">
+    <main className="p-4 space-y-6">
       <h1 className="text-2xl font-bold">ブログ一覧</h1>
 
-      <div className="mb-4">
-        <BlogSortSelect value={sort} onChange={setSort} />
-      </div>
+      <SearchInput keyword={keyword} onChange={setKeyword} />
 
-      {sortedBlogs.length === 0 ? (
-        <div>記事が見つかりませんでした。</div>
+      <TagList
+        tags={blogs.flatMap((b) => b.tags)}
+        selected={selectedTag}
+        onSelect={(tag) => {
+          setSelectedTag(tag);
+          goToPage(1);
+        }}
+      />
+
+      {loading ? (
+        <div>読み込み中...</div>
+      ) : filtered.length === 0 ? (
+        <div>該当する記事がありません</div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {sortedBlogs.map((blog) => (
-            <BlogCard
-              key={blog.id}
-              slug={blog.slug}
-              title={blog.title}
-              imageUrl={blog.imageUrl}
-              tags={blog.tags}
-              views={blog.views}
-              createdAt={blog.createdAt}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {paginatedItems.map((blog, index) => (
+              <motion.div
+                key={blog.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.05 }}
+              >
+                <BlogCard
+                  slug={blog.slug}
+                  title={blog.title}
+                  imageUrl={blog.imageUrl}
+                  tags={blog.tags}
+                  views={blog.views}
+                  createdAt={blog.createdAt}
+                />
+              </motion.div>
+            ))}
+          </div>
+
+          {/* 🔁 ページネーションUI */}
+          <div className="flex justify-center items-center gap-2 mt-6">
+            <button
+              onClick={goToPrev}
+              disabled={currentPage === 1}
+              className="px-3 py-1 border rounded disabled:opacity-50"
+            >
+              ← 前へ
+            </button>
+            {[...Array(totalPages)].map((_, i) => (
+              <button
+                key={i}
+                onClick={() => goToPage(i + 1)}
+                className={`px-3 py-1 border rounded ${
+                  currentPage === i + 1
+                    ? "bg-blue-600 text-white"
+                    : "bg-white text-gray-700"
+                }`}
+              >
+                {i + 1}
+              </button>
+            ))}
+            <button
+              onClick={goToNext}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 border rounded disabled:opacity-50"
+            >
+              次へ →
+            </button>
+          </div>
+        </>
       )}
     </main>
   );

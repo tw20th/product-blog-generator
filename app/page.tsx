@@ -6,6 +6,7 @@ import { useSortedBlogs } from "@/hooks/useSortedBlogs";
 import { ProductCard } from "@/components/product/ProductCard";
 import { BlogCard } from "@/components/blog/BlogCard";
 import { CategoryButtons } from "@/components/common/CategoryButtons";
+import { motion } from "framer-motion";
 
 export default function HomePage() {
   const { blogs, loading: loadingBlogs } = useBlogs();
@@ -15,9 +16,19 @@ export default function HomePage() {
   const topItems = [...items].sort((a, b) => b.score - a.score).slice(0, 3);
 
   return (
-    <main className="p-4 space-y-10">
+    <motion.main
+      className="p-4 space-y-10"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+    >
       {/* ✅ Hero セクション */}
-      <section className="text-center py-10 bg-gray-100 rounded-xl">
+      <motion.section
+        className="text-center py-10 bg-gray-100 rounded-xl"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+      >
         <h1 className="text-3xl md:text-4xl font-bold mb-2">
           最高のゲーミングチェアを見つけよう
         </h1>
@@ -30,16 +41,24 @@ export default function HomePage() {
         >
           人気ランキングを見る
         </a>
-      </section>
+      </motion.section>
 
       {/* ✅ カテゴリ導線 */}
-      <section>
+      <motion.section
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
         <h2 className="text-2xl font-bold mb-4">カテゴリから探す</h2>
         <CategoryButtons />
-      </section>
+      </motion.section>
 
       {/* ✅ 人気ブログ */}
-      <section>
+      <motion.section
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+      >
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold">人気ブログ記事</h2>
           <a href="/blog" className="text-sm text-blue-600 hover:underline">
@@ -50,7 +69,7 @@ export default function HomePage() {
         {loadingBlogs ? (
           <div>読み込み中...</div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {topBlogs.map((blog) => (
               <BlogCard
                 key={blog.id}
@@ -64,18 +83,23 @@ export default function HomePage() {
             ))}
           </div>
         )}
-      </section>
+      </motion.section>
 
       {/* ✅ 注目商品ランキング */}
-      <section>
+      <motion.section
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+      >
         <h2 className="text-2xl font-bold mb-4">注目のゲーミングチェア</h2>
         {loadingItems ? (
           <div>読み込み中...</div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {topItems.map((item) => (
               <ProductCard
                 key={item.id}
+                id={item.id}
                 productName={item.productName}
                 price={item.price}
                 imageUrl={`/images/${item.imageKeyword}.jpg`}
@@ -86,7 +110,7 @@ export default function HomePage() {
             ))}
           </div>
         )}
-      </section>
-    </main>
+      </motion.section>
+    </motion.main>
   );
 }
