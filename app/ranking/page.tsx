@@ -38,7 +38,10 @@ export default function RankingPage() {
                 id={item.id}
                 productName={item.productName}
                 price={item.price}
-                imageUrl={`/images/${item.imageKeyword}.jpg`}
+                imageUrl={
+                  item.imageUrl ??
+                  `/images/${item.imageKeyword ?? "no-image"}.jpg`
+                }
                 score={item.score}
                 featureHighlights={item.featureHighlights}
                 tag={item.tag}

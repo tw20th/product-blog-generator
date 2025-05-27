@@ -15,3 +15,6 @@ node_modules/
 encoded.txt
 service-account-key.json
 firebase-debug.log
+
+.DS_Store
+*.log

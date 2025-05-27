@@ -7,7 +7,6 @@ import { usePagination } from "@/hooks/usePagination";
 import { useEffect, useState } from "react";
 import { MonitoredItem } from "@/types/item";
 import { SearchInput } from "@/components/common/SearchInput";
-import { motion } from "framer-motion"; // ✅ 追加
 
 export default function CategoryPage() {
   const { tag } = useParams();
@@ -58,23 +57,17 @@ export default function CategoryPage() {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {paginatedItems.map((item, index) => (
-              <motion.div
+            {paginatedItems.map((item) => (
+              <ProductCard
                 key={item.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.05 }}
-              >
-                <ProductCard
-                  id={item.id}
-                  productName={item.productName}
-                  price={item.price}
-                  imageUrl={`/images/${item.imageKeyword}.jpg`}
-                  score={item.score}
-                  featureHighlights={item.featureHighlights}
-                  tag={item.tag}
-                />
-              </motion.div>
+                id={item.id}
+                productName={item.productName}
+                price={item.price}
+                imageUrl={item.imageUrl ?? `/images/${item.imageKeyword}.jpg`} // ✅ fallback付きで安全に渡す
+                score={item.score}
+                featureHighlights={item.featureHighlights}
+                tag={item.tag}
+              />
             ))}
           </div>
 
