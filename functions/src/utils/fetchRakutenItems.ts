@@ -1,48 +1,54 @@
+// functions/src/utils/fetchRakutenItems.ts
 import fetch from "node-fetch";
 import { db } from "../firebaseAdmin";
-import { Timestamp } from "firebase-admin/firestore"; // ← 追加
+import { config } from "firebase-functions";
+import * as dotenv from "dotenv";
+dotenv.config();
 
-const APPLICATION_ID = process.env.RAKUTEN_APPLICATION_ID;
+const applicationId = config().rakuten?.app_id ?? process.env.RAKUTEN_APP_ID;
 
-if (!APPLICATION_ID) {
-  throw new Error("RAKUTEN_APPLICATION_ID が .env に設定されていません");
+if (!applicationId) {
+  throw new Error("Rakuten Application ID が未設定です");
 }
 
-export async function fetchRakutenItems(keyword: string): Promise<void> {
-  const endpoint = "https://app.rakuten.co.jp/services/api/IchibaItem/Search/20220601";
-  const params = new URLSearchParams({
-    applicationId: APPLICATION_ID || "", // ← 修正
-    keyword,
-    hits: "10",
-    format: "json"
-  });
+// ✅ Rakuten API レスポンス型を定義
+type RakutenResponse = {
+  Items: {
+    Item: {
+      itemCode: string;
+      itemName: string;
+      itemPrice: number;
+      mediumImageUrls: { imageUrl: string }[];
+    };
+  }[];
+};
 
-  const response = await fetch(`${endpoint}?${params.toString()}`);
-  const data = await response.json();
+export async function fetchRakutenItems(keyword: string): Promise<void> {
+  const url = `https://app.rakuten.co.jp/services/api/IchibaItem/Search/20220601?format=json&keyword=${encodeURIComponent(
+    keyword
+  )}&applicationId=${applicationId}&hits=30&sort=-updateTimestamp`;
+
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Rakuten API fetch failed: ${res.status}`);
+
+  // ✅ 型アサーション追加
+  const data = (await res.json()) as RakutenResponse;
 
   const now = new Date();
 
   for (const wrapper of data.Items) {
     const item = wrapper.Item;
 
-    await db
-      .collection("rakutenItems")
-      .doc(item.itemCode)
-      .set(
-        {
-          itemName: item.itemName,
-          itemUrl: item.itemUrl,
-          imageUrl: item.mediumImageUrls?.[0]?.imageUrl || "",
-          price: item.itemPrice.toString(),
-          genreId: item.genreId || "",
-          productKeyword: keyword,
-          lastFetchedAt: Timestamp.fromDate(now) // ← 修正
-        },
-        { merge: true }
-      );
+    await db.collection("rakutenItems").add({
+      itemCode: item.itemCode,
+      itemName: item.itemName,
+      price: item.itemPrice,
+      imageUrl: item.mediumImageUrls?.[0]?.imageUrl ?? "",
+      createdAt: now.toISOString()
+    });
 
-    console.log(`✅ 保存済み: ${item.itemName}`);
+    console.log(`✅ 取得: ${item.itemName}`);
   }
 
-  console.log("🏁 楽天商品取得完了");
+  console.log("🏁 全件保存完了");
 }
