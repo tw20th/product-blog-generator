@@ -1,17 +1,20 @@
-import * as dotenv from "dotenv";
-dotenv.config();
-
-import { config } from "firebase-functions";
-import { initializeApp, cert, ServiceAccount } from "firebase-admin/app";
+import { initializeApp, cert } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 
-const base64 = process.env.ADMIN_SERVICE_ACCOUNT_BASE64 || config().admin?.config_base64;
-if (!base64) throw new Error("Service account base64 is not set.");
+const projectId = process.env.FB_PROJECT_ID;
+const clientEmail = process.env.FB_CLIENT_EMAIL;
+const privateKey = process.env.FB_PRIVATE_KEY?.replace(/\\n/g, "\n");
 
-const serviceAccount = JSON.parse(Buffer.from(base64, "base64").toString("utf8")) as ServiceAccount;
+if (!projectId || !clientEmail || !privateKey) {
+  throw new Error("Missing Firebase environment variables.");
+}
 
 const firebaseApp = initializeApp({
-  credential: cert(serviceAccount)
+  credential: cert({
+    projectId,
+    clientEmail,
+    privateKey
+  })
 });
 
 export const db = getFirestore(firebaseApp);
