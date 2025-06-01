@@ -25,7 +25,7 @@ export async function generateBlogContent({
   const filledPrompt = fillTemplate(rawTemplate, { productName, price, features });
 
   const res = await openai.chat.completions.create({
-    model: "gpt-4",
+    model: "gpt-3.5-turbo",
     messages: [{ role: "user", content: filledPrompt }]
   });
 
